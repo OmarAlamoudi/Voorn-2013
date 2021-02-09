@@ -3,15 +3,30 @@
 // Edited by Omar Alamoudi Feb 2021
 
 requires("1.47b");
-usedialog=1;	//1 is use dialog, 0 is use settings below.
+usedialog=0;	//1 is use dialog, 0 is use settings below.
+
+// user must input whether the used machine is a pc or mac (Linux)
+ispc = false;
+ismac = !ispc;
+
+// setting the file separator
+if(ispc){
+	filesep = "\\";
+} else {
+	filesep = "/";
+}
 
 if (usedialog==0) {
-	root='D:\\Rootfolder\\';
+	if (ispc){
+		root='D:\\Rootfolder\\';	
+	} else {
+		root='/Users/omaralamoudi/Dropbox/GraduateSchool/PhD/Projects/Fracture Detection and Property Measurements/using Voorn-2013/';
+	}
 	doroifile=1;
 	dolinesfile=1;
 	ming=1;
 	maxg=8;
-	stepg=1;
+	stepg=2; // changed from 1 to 2
 } else {
 	Dialog.create("Preparation settings");
 	Dialog.addMessage("Set the following. Both ROI and lines file need to be present before starting the Multiscale Hessian Filtering.");
@@ -23,31 +38,31 @@ if (usedialog==0) {
 	Dialog.addNumber("Maximum Gaussian Kernel to include for control lines [>=s-max]", 8, 0, 2, "voxels");
 	Dialog.addNumber("Stepsize between Gaussian Kernels for control lines [<=s-step]", 1, 0, 2, "voxels");
 	Dialog.show;
-	root=Dialog.getString();
-	doroifile=Dialog.getCheckbox();
-	dolinesfile=Dialog.getCheckbox();
-	ming=Dialog.getNumber();
-	maxg=Dialog.getNumber();
-	stepg=Dialog.getNumber();
+	root		=Dialog.getString();
+	doroifile	=Dialog.getCheckbox();
+	dolinesfile	=Dialog.getCheckbox();
+	ming		=Dialog.getNumber();
+	maxg		=Dialog.getNumber();
+	stepg		=Dialog.getNumber();
 }
 
-// I'm not sure why the a Windows PC file structure is enforced. I'm chaning this to be compatible with macOS as well
-//if (endsWith(root, "\\")==0) {exit("Root folder filename is not correct! Does it end with \\ ? Macro aborted")}
+//// I'm not sure why the a Windows PC file structure is enforced. I'm chaning this to be compatible with macOS as well
+//if (endsWith(root, "\\")==0 || endsWith(root, "/")) {
+//	exit("Root folder filename is not correct! Does it end with \\ ? Macro aborted")
+//}
 
-saveroifile=root+"ROI.ijm";
+saveroifile	=root+"ROI.ijm";
+
 savelinesfile=root+"Lines.ijm";
-inputfolder=root+"Input\\";
-inputfiles=getFileList(inputfolder);
-numfiles=inputfiles.length;
-
-
+inputfolder	= root+"Input"+filesep;
+inputfiles	= getFileList(inputfolder);
+numfiles	= inputfiles.length;
 numtestfile=round(numfiles/2);				//Take a slice halfway the stack
 testfile=inputfolder+inputfiles[numtestfile];
-
 //ROI file generation
 if (doroifile==true) {
 run("Image Sequence...", "open=&inputfolder number=&numfiles starting=1 increment=1 scale=100 file=[] or=[] sort use");
-
+print("Loaded the image sequence"); 
 setTool(1);
 waitForUser("Create a circular/oval or rectangular ROI. Regard the complete stack! Press OK when finished.");
 getSelectionBounds(xroi,yroi,widthroi,heightroi);
