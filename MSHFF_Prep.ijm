@@ -1,5 +1,6 @@
 //Multiscale Hessian fracture filtering: Preparation
 //Maarten Voorn, December 2012
+// Edited by Omar Alamoudi Feb 2021
 
 requires("1.47b");
 usedialog=1;	//1 is use dialog, 0 is use settings below.
@@ -30,7 +31,9 @@ if (usedialog==0) {
 	stepg=Dialog.getNumber();
 }
 
-if (endsWith(root, "\\")==0) {exit("Root folder filename is not correct! Does it end with \\ ? Macro aborted")}
+// I'm not sure why the a Windows PC file structure is enforced. I'm chaning this to be compatible with macOS as well
+//if (endsWith(root, "\\")==0) {exit("Root folder filename is not correct! Does it end with \\ ? Macro aborted")}
+
 saveroifile=root+"ROI.ijm";
 savelinesfile=root+"Lines.ijm";
 inputfolder=root+"Input\\";
