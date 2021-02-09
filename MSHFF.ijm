@@ -2,21 +2,32 @@
 //Maarten Voorn, December 2012
 
 requires("1.47b");
-usedialog=1;				//1 to use the GUI dialog, 0 to use parameters defined below!!
+usedialog=0;				//1 to use the GUI dialog, 0 to use parameters defined below!!
 
+// Compatibility for macOS 
+ispc = false;
+ismac = !ispc;
+
+if (ispc){
+	filesep = "\\";
+} else {
+	filesep = "/";
+}
+// --- 
 if (usedialog==0) {
-root='D:\\Rootfolder\\';		// Root folder with files. Note double backslash, also at end!
-avgmat=65535;				// Average material greyscale. Defaults (not specified): 65535 for 16bit, 255 for 8bit.
-fracthresh=0;				// Conservative threshold for clear fractures. Default (not specified): 0.
-maxmat=65535;				// Maximum material greyscale to delete bright spots. Defaults (not specified): 65535 for 16bit, 255 for 8bit.
+root="/Users/omaralamoudi/Dropbox/GraduateSchool/PhD/Projects/Fracture Detection and Property Measurements/using Voorn-2013/";		// Root folder with files. Note double backslash, also at end!
+//root="dummy";
+avgmat=18300;				// Average material greyscale. Defaults (not specified): 65535 for 16bit, 255 for 8bit.
+fracthresh=15330;				// Conservative threshold for clear fractures. Default (not specified): 0.
+maxmat=27760;				// Maximum material greyscale to delete bright spots. Defaults (not specified): 65535 for 16bit, 255 for 8bit.
 padding=0;				// Amount of padding at start and end of stack to reduce deletion. 0-100% (over overlap). Recommended: 0 (no padding)!!
-blocksize=100;				// Size (number of slices) for blocks in 3D Hessian analysis.
-ming=2;					// Minimum Gaussian kernel to calculate. 
-maxg=6;					// Maximum Gaussian kernel to calculate. Also controls overlap!!!
-stepg=1;				// Stepsize between consecutive Gaussian kernels to calculate. 
-useming=2;				// Eventually used min Gaussian kernel. 
-usemaxg=6;				// Eventually used max Gaussian kernel. 
-usestepg=1;				// Eventually used stepsize between consecutive Gaussian kernels. 
+blocksize=151;				// Size (number of slices) for blocks in 3D Hessian analysis.
+ming=1;					// Minimum Gaussian kernel to calculate. 
+maxg=7;					// Maximum Gaussian kernel to calculate. Also controls overlap!!!
+stepg=2;				// Stepsize between consecutive Gaussian kernels to calculate. 
+useming=1;				// Eventually used min Gaussian kernel. 
+usemaxg=7;				// Eventually used max Gaussian kernel. 
+usestepg=2;				// Eventually used stepsize between consecutive Gaussian kernels. 
 doprep=1;				// Create preparation files (1=yes, 0=no)
 dohess=1;				// Perform Hessian calculation (1=yes, 0=no)
 docombi=1;				// Combine multiple scales outputted by Hessian calculation (1=yes, 0=no)
@@ -66,8 +77,8 @@ usestepg=Dialog.getNumber();
 //____________________________________________________________________________________________________________
 //Testing settings. Defining locations and number of files. Starting logfile.
 IJ.log("\\Close");			//Closes the log-window (if open)
-if (endsWith(root, "\\")==0) {exit("Root folder filename is not correct! Does it exist, and does it end with \\ ? Macro aborted")}
-run("FeatureJ Options", "  progress");			//Setting FeatureJ to work properly with macro
+// if (endsWith(root, "\\")==0) {exit("Root folder filename is not correct! Does it exist, and does it end with \\ ? Macro aborted")}
+run("FeatureJ Options", "progress");			//Setting FeatureJ to work properly with macro
 if (docombi==1) {					//Tests required for combining.
 	if (useming==usemaxg) {										//Allows but warns for single Gaussian kernel.
 		Dialog.create("Warning on selected Gaussian kernels");
@@ -88,11 +99,12 @@ if (docombi==1) {					//Tests required for combining.
 }
 
 if ((blocksize-4*maxg)<1) {exit("Blocksize is set too small with current maximum Gaussian scale (required overlap is larger than blocksize). Macro aborted.");} //Take overlap = 2*maxg
-inputfolder=root+"Input\\";
+inputfolder=root+"input"+filesep;
 inputfiles=getFileList(inputfolder);
 numfiles=inputfiles.length;
+
 if (blocksize>numfiles) {exit("Blocksize is larger than total number of files. Only blocksize <= Number of files is supported. Macro aborted.");}
-inputhessfolder=root+"InputHess\\";
+inputhessfolder=root+"InputHess"+filesep;
 checkempty=getFileList(inputhessfolder);
 if (doprep==0 && dohess==0 && docombi==0) {
 	exit("No analyses selected! Macro aborted.");
@@ -110,7 +122,7 @@ if (doprep==1) {
 	}
 }	
 File.makeDirectory(inputhessfolder);
-calcfolder=root+"Calc\\";
+calcfolder=root+"Calc"+filesep;
 checkempty=getFileList(calcfolder);
 if (dohess==1) {
 	if (checkempty.length>0) {
@@ -125,7 +137,7 @@ if (dohess==1) {
 	}
 }
 File.makeDirectory(calcfolder);
-outputfolder=root+"Output\\";
+outputfolder=root+"Output"+filesep;
 checkempty=getFileList(outputfolder);
 if (docombi==1) {
 	if (checkempty.length>0) {
@@ -439,7 +451,7 @@ normfiles = getFileList(calcfolder);
 setBatchMode(true);
 for (i=0; i<normfiles.length; i++) {			//File counting starts at 0
 	showStatus("Normalising...");
-	showProgress(i/normfiles);	
+	showProgress(i/normfiles.length);	
 	normfile = calcfolder+normfiles[i];
 	open(normfile);
 	makeRectangle(lineboxx, lineboxy, lineboxw, lineboxh);
@@ -540,11 +552,11 @@ percmemorydisp="("+percmemory+" %)";
 print("End memory usage:",usedmemory,"MB of",maxmemory,"MB",percmemorydisp, "NOTE: Differs from Windows Task Manager memory usage!");
 
 savelogname="HessianFilteringLog";
-savelogfile=root+"\\"+savelogname+".txt";
+savelogfile=root+filesep+savelogname+".txt";
 i=1;
 while (File.exists(savelogfile)==true) {				//Prevents overwriting of log-files
 	savelognamealt=savelogname+i;
-	savelogfile=root+"\\"+savelognamealt+".txt";
+	savelogfile=root+filesep+savelognamealt+".txt";
 	i=i+1;	
 }
 print("Logfile saved to", savelogfile);
