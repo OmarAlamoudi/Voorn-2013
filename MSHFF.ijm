@@ -2,20 +2,11 @@
 //Maarten Voorn, December 2012
 
 requires("1.47b");
-usedialog=0;				//1 to use the GUI dialog, 0 to use parameters defined below!!
+usedialog=1;				//1 to use the GUI dialog, 0 to use parameters defined below!!
 
-// Compatibility for macOS 
-ispc = false;
-ismac = !ispc;
-
-if (ispc){
-	filesep = "\\";
-} else {
-	filesep = "/";
-}
 // --- 
 if (usedialog==0) {
-root="/Users/omaralamoudi/Dropbox/GraduateSchool/PhD/Projects/Fracture Detection and Property Measurements/using Voorn-2013/";		// Root folder with files. Note double backslash, also at end!
+root="/Users/omaralamoudi/Dropbox/GraduateSchool/PhD/Projects/Fracture Detection and Property Measurements/using Voorn-2013/runs/comparing 0_degree and 18_degree/0_degree/root/";		// Root folder with files. Note double backslash, also at end!
 //root="dummy";
 avgmat=18300;				// Average material greyscale. Defaults (not specified): 65535 for 16bit, 255 for 8bit.
 fracthresh=15330;				// Conservative threshold for clear fractures. Default (not specified): 0.
@@ -77,7 +68,7 @@ usestepg=Dialog.getNumber();
 //____________________________________________________________________________________________________________
 //Testing settings. Defining locations and number of files. Starting logfile.
 IJ.log("\\Close");			//Closes the log-window (if open)
-// if (endsWith(root, "\\")==0) {exit("Root folder filename is not correct! Does it exist, and does it end with \\ ? Macro aborted")}
+if (endsWith(root, File.separator)==0) {exit("Root folder filename is not correct! Does it exist, and does it end with '" + File.separator + "'? Macro aborted")}
 run("FeatureJ Options", "progress");			//Setting FeatureJ to work properly with macro
 if (docombi==1) {					//Tests required for combining.
 	if (useming==usemaxg) {										//Allows but warns for single Gaussian kernel.
@@ -88,7 +79,7 @@ if (docombi==1) {					//Tests required for combining.
 	if (useming<ming||useming>maxg) {exit("Gaussian kernels to combine [uses-min, uses-max] are outside of range of calculated Gaussian kernels [s-min, s-max]. Macro aborted.");}
 	if (usemaxg>maxg||usemaxg<ming) {exit("Gaussian kernels to combine [uses-min, uses-max] are outside of range of calculated Gaussian kernels [s-min, s-max]. Macro aborted.");}
 
-	selnum=((usemaxg-useming)/usestepg)+1;								
+	selnum=((usemaxg-useming)/usestepg)+1;									
 	if (selnum/round(selnum)!=1) {									//Check for integer
 		exit("Range of Gaussian kernels to combine does not correspond to an integer amount of scales. Revise!\nExample:\nSteps 2 to 5 with a stepsize of 2 is wrong; gives [2,4] but leaves 'half a scale'.\nSteps 2 to 4 with a stepsize of 2 is correct, and gives [2,4].\nMacro aborted.");
 	}
@@ -99,12 +90,13 @@ if (docombi==1) {					//Tests required for combining.
 }
 
 if ((blocksize-4*maxg)<1) {exit("Blocksize is set too small with current maximum Gaussian scale (required overlap is larger than blocksize). Macro aborted.");} //Take overlap = 2*maxg
-inputfolder=root+"input"+filesep;
+
+inputfolder=root+"input"+File.separator;
 inputfiles=getFileList(inputfolder);
 numfiles=inputfiles.length;
 
 if (blocksize>numfiles) {exit("Blocksize is larger than total number of files. Only blocksize <= Number of files is supported. Macro aborted.");}
-inputhessfolder=root+"InputHess"+filesep;
+inputhessfolder=root+"input_hessian"+File.separator;
 checkempty=getFileList(inputhessfolder);
 if (doprep==0 && dohess==0 && docombi==0) {
 	exit("No analyses selected! Macro aborted.");
@@ -122,7 +114,7 @@ if (doprep==1) {
 	}
 }	
 File.makeDirectory(inputhessfolder);
-calcfolder=root+"Calc"+filesep;
+calcfolder=root+"calc"+File.separator;
 checkempty=getFileList(calcfolder);
 if (dohess==1) {
 	if (checkempty.length>0) {
@@ -137,7 +129,7 @@ if (dohess==1) {
 	}
 }
 File.makeDirectory(calcfolder);
-outputfolder=root+"Output"+filesep;
+outputfolder=root+"output"+File.separator;
 checkempty=getFileList(outputfolder);
 if (docombi==1) {
 	if (checkempty.length>0) {
@@ -172,8 +164,8 @@ if (padding>0 && paddone==1) {
 
 ROImacro=root+"ROI.ijm";
 if (File.exists(ROImacro)==false) {exit("No ROI-file [ROI.ijm] found. Macro aborted.");}
-linesmacro=root+"Lines.ijm";
-if (File.exists(linesmacro)==false) {exit("No lines-file [Lines.ijm] found. Macro aborted.");}
+linesmacro=root+"lines.ijm";
+if (File.exists(linesmacro)==false) {exit("No lines-file [lines.ijm] found. Macro aborted.");}
 
 getDateAndTime(year1,month1,dayofweek1,dayofmonth1,hour1,minute1,second1,msec1);
 month1=month1+1;
@@ -552,11 +544,11 @@ percmemorydisp="("+percmemory+" %)";
 print("End memory usage:",usedmemory,"MB of",maxmemory,"MB",percmemorydisp, "NOTE: Differs from Windows Task Manager memory usage!");
 
 savelogname="HessianFilteringLog";
-savelogfile=root+filesep+savelogname+".txt";
+savelogfile=root+File.separator+savelogname+".txt";
 i=1;
 while (File.exists(savelogfile)==true) {				//Prevents overwriting of log-files
 	savelognamealt=savelogname+i;
-	savelogfile=root+filesep+savelognamealt+".txt";
+	savelogfile=root+File.separator+savelognamealt+".txt";
 	i=i+1;	
 }
 print("Logfile saved to", savelogfile);
